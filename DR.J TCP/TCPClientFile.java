@@ -64,7 +64,7 @@ public class TCPClientFile
     		data = new byte[bufferSize];
     		
     		//insert the path/name of your target file
-    		FileOutputStream fileOut = new FileOutputStream("DR.J TCP\\test.txt",true);		
+    		FileOutputStream fileOut = new FileOutputStream("DR.J TCP\\testResponse.txt",true);		
     		
     		//now read the file coming from Server & save it onto disk
   
