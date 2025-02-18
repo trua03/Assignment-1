@@ -51,7 +51,7 @@ public class TCPServerFile
     	try
     	{
     		//	write the filename below in the File constructor
-    		File file = new File("Assignment-5-Fall18.pdf");
+    		File file = new File("DR.J TCP\\test.txt");
     		FileInputStream fileInput = new FileInputStream(file);
     		//get the file length
     		long fileSize = file.length();
