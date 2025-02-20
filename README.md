@@ -26,3 +26,5 @@ This has 2 varients, they both do the same thing, however, files marked with a 2
 2. second you run the UDPClient.java
 3. then enter a message to send to the server in the UDPClient Window
 4. check the server window for your message
+
+https://discord.gg/9KMy3VWB
