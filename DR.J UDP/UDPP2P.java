@@ -10,16 +10,16 @@ import java.util.Scanner;
  *  
  * 
  */
-public class UDPClient2 
+public class UDPP2P
 {
     private DatagramSocket socket;
     private Scanner in = new Scanner(System.in);
-    public UDPClient2() 
+    public UDPP2P() 
     {
-    	//create a client socket with random port number chose by DatagramSocket
     	try 
     	{
-			socket = new DatagramSocket();
+    		//create the socket assuming the server is listening on port 9876
+			socket = new DatagramSocket(9876);
 		} 
     	catch (SocketException e) 
     	{
@@ -96,7 +96,7 @@ public class UDPClient2
 
     public static void main(String[] args) 
     {
-        UDPClient2 client = new UDPClient2();
+        UDPP2P client = new UDPP2P();
         client.createAndListenSocket();
     }
 }
