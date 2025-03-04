@@ -1,9 +1,11 @@
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * 
  * @author cjaiswal
@@ -14,6 +16,7 @@ import java.net.SocketException;
 public class UDPServer2
 {
     private DatagramSocket socket = null;
+    private Map<String, String> fileRecords = new HashMap<>();
 
     public UDPServer2() 
     {
@@ -46,7 +49,7 @@ public class UDPServer2
                 socket.receive(incomingPacket);
                 
                 //retrieve the data
-                String message = new String(incomingPacket.getData());
+                String message = new String(incomingPacket.getData(), 0, incomingPacket.getLength());
                 
                 //terminate if it is "THEEND" message from the client
                 if(message.equals("THEEND"))
@@ -58,11 +61,22 @@ public class UDPServer2
                 System.out.println("Client Details:PORT " + incomingPacket.getPort()
                 + ", IP Address:" + incomingPacket.getAddress());
                 
+                // Store file names and client information
+                String clientInfo = incomingPacket.getAddress().toString() + ":" + incomingPacket.getPort();
+                fileRecords.put(clientInfo, message);
+
+                // Prepare response with all file records
+                StringBuilder responseBuilder = new StringBuilder("File records:\n");
+                for (Map.Entry<String, String> entry : fileRecords.entrySet()) {
+                    responseBuilder.append("Client: ").append(entry.getKey()).append("\nFiles:\n")
+                            .append(entry.getValue()).append("\n");
+                }
+                String reply = responseBuilder.toString();
+                byte[] data = reply.getBytes();
+
                 //retrieve client socket info and create response packet
                 InetAddress IPAddress = incomingPacket.getAddress();
                 int port = incomingPacket.getPort();
-                String reply = "Thank you for the message";
-                byte[] data = reply.getBytes();
                 DatagramPacket replyPacket =
                         new DatagramPacket(data, data.length, IPAddress, port);
                 socket.send(replyPacket);

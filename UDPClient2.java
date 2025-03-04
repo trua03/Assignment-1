@@ -1,7 +1,8 @@
-
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.*;
+import java.util.Properties;
 import java.util.Scanner;
 /**
  * 
@@ -10,16 +11,16 @@ import java.util.Scanner;
  *  
  * 
  */
-public class UDPP2P
+public class UDPClient2 
 {
     private DatagramSocket socket;
     private Scanner in = new Scanner(System.in);
-    public UDPP2P() 
+    public UDPClient2() 
     {
+    	//create a client socket with random port number chose by DatagramSocket
     	try 
     	{
-    		//create the socket assuming the server is listening on port 9876
-			socket = new DatagramSocket(9876);
+			socket = new DatagramSocket();
 		} 
     	catch (SocketException e) 
     	{
@@ -34,8 +35,14 @@ public class UDPP2P
         {
             char ch='y';
             
+            // Load configuration from file
+            Properties config = new Properties();
+            config.load(new FileInputStream("UDPClient2.config"));
+            String ipAddress = config.getProperty("IPAddress");
+            String directoryPath = config.getProperty("Directory");
+
             //create socket for the destination/server
-            InetAddress IPAddress = InetAddress.getByName("localhost");
+            InetAddress IPAddress = InetAddress.getByName(ipAddress);
             int serverPort = 9876;
             byte[] incomingData = new byte[1024];
             String sentence = "";
@@ -47,7 +54,7 @@ public class UDPP2P
             	System.out.println("Enter your message:");
 
                 //create directory list
-                File directory = new File("./DR.J UDP");
+                File directory = new File(directoryPath);
                 File[] filesList = directory.listFiles();
                 StringBuilder sentenceBuilder = new StringBuilder();
                 for (File file : filesList) {
@@ -96,7 +103,7 @@ public class UDPP2P
 
     public static void main(String[] args) 
     {
-        UDPP2P client = new UDPP2P();
+        UDPClient2 client = new UDPClient2();
         client.createAndListenSocket();
     }
 }

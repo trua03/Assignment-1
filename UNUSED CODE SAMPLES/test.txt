@@ -1,1 +1,0 @@
-testing file size, it should be 40 bytes

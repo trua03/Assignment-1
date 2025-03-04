@@ -1,7 +1,8 @@
-
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.*;
+import java.util.Properties;
 import java.util.Scanner;
 /**
  * 
@@ -10,16 +11,16 @@ import java.util.Scanner;
  *  
  * 
  */
-public class UDPClient2 
+public class UDPP2P
 {
     private DatagramSocket socket;
     private Scanner in = new Scanner(System.in);
-    public UDPClient2() 
+    public UDPP2P() 
     {
-    	//create a client socket with random port number chose by DatagramSocket
     	try 
     	{
-			socket = new DatagramSocket();
+    		//create the socket assuming the server is listening on port 9876
+			socket = new DatagramSocket(9876);
 		} 
     	catch (SocketException e) 
     	{
@@ -34,8 +35,13 @@ public class UDPClient2
         {
             char ch='y';
             
+            // Load IP address from configuration file
+            Properties config = new Properties();
+            config.load(new FileInputStream("../UDPP2P.config"));
+            String ipAddress = config.getProperty("IPAddress", "localhost");
+
             //create socket for the destination/server
-            InetAddress IPAddress = InetAddress.getByName("localhost");
+            InetAddress IPAddress = InetAddress.getByName(ipAddress);
             int serverPort = 9876;
             byte[] incomingData = new byte[1024];
             String sentence = "";
@@ -96,7 +102,7 @@ public class UDPClient2
 
     public static void main(String[] args) 
     {
-        UDPClient2 client = new UDPClient2();
+        UDPP2P client = new UDPP2P();
         client.createAndListenSocket();
     }
 }
