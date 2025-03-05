@@ -5,6 +5,8 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * 
@@ -17,6 +19,9 @@ public class UDPServer2
 {
     private DatagramSocket socket = null;
     private Map<String, String> fileRecords = new HashMap<>();
+    private String latestTimestamp = "";
+    private Map<String, Long> clientLastUpdate = new HashMap<>();
+    private static final long TIMEOUT = 31000; // 31 seconds
 
     public UDPServer2() 
     {
@@ -31,7 +36,16 @@ public class UDPServer2
 			e.printStackTrace();
 		}
 
+        // Schedule a task to check for offline clients
+        Timer timer = new Timer(true);
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                checkForOfflineClients();
+            }
+        }, 0, 10000); // Check every 10 seconds
     }
+
     public void createAndListenSocket() 
     {
         try 
@@ -61,15 +75,31 @@ public class UDPServer2
                 System.out.println("Client Details:PORT " + incomingPacket.getPort()
                 + ", IP Address:" + incomingPacket.getAddress());
                 
+                // Extract timestamp from the message
+                String[] messageParts = message.split("\n", 2);
+                latestTimestamp = messageParts[0].replace("Timestamp: ", "");
+
                 // Store file names and client information
                 String clientInfo = incomingPacket.getAddress().toString() + ":" + incomingPacket.getPort();
-                fileRecords.put(clientInfo, message);
+                fileRecords.put(clientInfo, messageParts[1]);
+                clientLastUpdate.put(clientInfo, System.currentTimeMillis());
 
-                // Prepare response with all file records
-                StringBuilder responseBuilder = new StringBuilder("File records:\n");
+                // Prepare response with all file records, latest timestamp, and offline nodes
+                StringBuilder responseBuilder = new StringBuilder("Available Files:\n");
+                long currentTime = System.currentTimeMillis();
                 for (Map.Entry<String, String> entry : fileRecords.entrySet()) {
-                    responseBuilder.append("Client: ").append(entry.getKey()).append("\nFiles:\n")
-                            .append(entry.getValue()).append("\n");
+                    if (currentTime - clientLastUpdate.get(entry.getKey()) <= TIMEOUT) {
+                        responseBuilder.append("Client: ").append(entry.getKey()).append("\nFiles:\n")
+                                .append(entry.getValue()).append("\n");
+                    }
+                }
+                responseBuilder.append("Latest update timestamp: ").append(latestTimestamp).append("\n");
+                responseBuilder.append("Offline Nodes:\n");
+                for (Map.Entry<String, Long> entry : clientLastUpdate.entrySet()) {
+                    if (currentTime - entry.getValue() > TIMEOUT) {
+                        responseBuilder.append("Client: ").append(entry.getKey()).append(" is possibly offline.\n");
+                        fileRecords.remove(entry.getKey());
+                    }
                 }
                 String reply = responseBuilder.toString();
                 byte[] data = reply.getBytes();
@@ -90,6 +120,16 @@ public class UDPServer2
         {
             i.printStackTrace();
         } 
+    }
+
+    private void checkForOfflineClients() {
+        long currentTime = System.currentTimeMillis();
+        for (Map.Entry<String, Long> entry : clientLastUpdate.entrySet()) {
+            if (currentTime - entry.getValue() > TIMEOUT) {
+                System.out.println("Client " + entry.getKey() + " is possibly offline.");
+                fileRecords.remove(entry.getKey());
+            }
+        }
     }
 
     public static void main(String[] args) 

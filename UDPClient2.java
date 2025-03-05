@@ -2,8 +2,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.Random;
 /**
  * 
  * @author cjaiswal
@@ -15,14 +18,18 @@ public class UDPClient2
 {
     private DatagramSocket socket;
     private Scanner in = new Scanner(System.in);
+    private Random random = new Random();
+
     public UDPClient2() 
     {
     	//create a client socket with random port number chose by DatagramSocket
     	try 
     	{
 			socket = new DatagramSocket();
+            System.out.println("Client IP: " + InetAddress.getLocalHost().getHostAddress());
+            System.out.println("Client Port: " + socket.getLocalPort());
 		} 
-    	catch (SocketException e) 
+    	catch (SocketException | UnknownHostException e) 
     	{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -51,8 +58,7 @@ public class UDPClient2
             do
             {
             	//construct the client packet & send it
-            	System.out.println("Enter your message:");
-
+            	
                 //create directory list
                 File directory = new File(directoryPath);
                 File[] filesList = directory.listFiles();
@@ -64,6 +70,10 @@ public class UDPClient2
                 }
                 sentence = sentenceBuilder.toString();
 
+                // Add timestamp to the message
+                String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+                sentence = "Timestamp: " + timestamp + "\n" + sentence;
+
             	data = sentence.getBytes();
                 DatagramPacket sendPacket = new DatagramPacket(data, data.length, IPAddress, serverPort);
                 socket.send(sendPacket);
@@ -71,21 +81,25 @@ public class UDPClient2
                 //create packet and recieve the response from the server
                 DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
                 socket.receive(incomingPacket);
-                String response = new String(incomingPacket.getData());
-                System.out.println("Response from server:" + response);
+                String response = new String(incomingPacket.getData(), 0, incomingPacket.getLength());
+                System.out.println("Response from server:\n" + response);
                 System.out.println("Server Details:PORT " + incomingPacket.getPort()
                 + ", IP Address: " + incomingPacket.getAddress());
                 sendPacket = null; incomingPacket = null;
-                System.out.println("Chat more? Y/N...");
-                ch = in.nextLine().charAt(0);
-            }while(ch=='y' || ch=='Y');
+                System.out.println("My IP: " + InetAddress.getLocalHost().getHostAddress());
+                System.out.println("My Port: " + socket.getLocalPort());
+
+                // Wait for a random interval between 0-30 seconds
+                int waitTime = random.nextInt(31) * 1000;
+                Thread.sleep(waitTime);
+            }while(true);
             
             //send THEEND message to server to terminate
-            sentence = "THEEND";
-            data = sentence.getBytes();
-            DatagramPacket sendPacket = new DatagramPacket(data, data.length, IPAddress, 9876);
-            socket.send(sendPacket);
-            socket.close();
+            // sentence = "THEEND";
+            // data = sentence.getBytes();
+            // DatagramPacket sendPacket = new DatagramPacket(data, data.length, IPAddress, 9876);
+            // socket.send(sendPacket);
+            // socket.close();
         }
         catch (UnknownHostException e) 
         {
@@ -95,7 +109,7 @@ public class UDPClient2
         {
             e.printStackTrace();
         } 
-        catch (IOException e) 
+        catch (IOException | InterruptedException e) 
         {
             e.printStackTrace();
         }
