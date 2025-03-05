@@ -1,30 +1,93 @@
-There are as of now two examples of networking code: Dr.J's sample code, and a simpler code from GeeksForGeeks. here is how they work
+# UDP Networking Examples
 
-DR.J TCP:
-This has 2 Varients, a message varient and a file varient
-Message:
-1. you first run the TCPServer.java
-2. second you run the TCPClient.java
-3. then enter a message to send to the server in the TCPClient Window
-4. check the server window for your message
-File:
-1. edit the test.txt file
-2. run the TCPServerFile.java
-3. run the TCPClientFile.java
-4. check the tetResponse.txt file, it should match test.txt
+This project contains examples of UDP networking code. The examples include a UDP client, server, and peer-to-peer (P2P) communication. Below are the details and instructions for running each example.
 
-Geeks For Geeks TCP:
-1. you first run the serverSide.java
-2. second you run the clientSide.java
-3. then enter a message to send to the server in the clientSide Window
-4. check the server window for your message
-this one is the same as dr.j's but is written in a different way, could be useful
+## Files
 
-DR.J UDP:
-This has 2 varients, they both do the same thing, however, files marked with a 2 can send multiple messages, while files marked with 1 only send 1 message then close
-1. you first run the UDPServer.java
-2. second you run the UDPClient.java
-3. then enter a message to send to the server in the UDPClient Window
-4. check the server window for your message
+- `UDPClient2.java`: A UDP client that sends directory file names to the server.
+- `UDPClient2.config`: Configuration file for `UDPClient2.java`.
+- `UDPServer2.java`: A UDP server that receives file names from clients and responds with a list of available files.
+- `UDPServer.config`: Configuration file for `UDPServer2.java`.
+- `UDPP2P.java`: A UDP peer-to-peer (P2P) client that communicates with other peers to share file lists.
+- `UDPP2P.config`: Configuration file for `UDPP2P.java`.
 
-https://discord.gg/9KMy3VWB
+## Configuration Files
+
+### `UDPClient2.config`
+
+```plaintext
+IPAddress=localhost
+Directory=./
+ServerPort=9876
+```
+
+- `IPAddress`: The IP address of the server.
+- `Directory`: The directory path to list files from.
+- `ServerPort`: The port number of the server.
+
+### `UDPServer.config`
+
+```plaintext
+Port=9876
+```
+
+- `Port`: The port number the server listens on.
+
+### `UDPP2P.config`
+
+```plaintext
+Peers=192.168.1.185:9876
+Directory=./
+```
+
+- `Peers`: A comma-separated list of peer addresses and ports.
+- `Directory`: The directory path to list files from.
+
+## Running the Examples
+
+### UDP Client-Server Example
+
+1. **Run the Server:**
+   - Open a terminal and navigate to the project directory.
+   - Compile and run `UDPServer2.java`:
+     ```sh
+     javac UDPServer2.java
+     java UDPServer2
+     ```
+
+2. **Run the Client:**
+   - Open another terminal and navigate to the project directory.
+   - Compile and run `UDPClient2.java`:
+     ```sh
+     javac UDPClient2.java
+     java UDPClient2
+     ```
+
+3. **Interaction:**
+   - The client will send the list of files in the specified directory to the server.
+   - The server will respond with the list of available files from all clients.
+
+### UDP Peer-to-Peer (P2P) Example
+
+1. **Run the P2P Client:**
+   - Open a terminal and navigate to the project directory.
+   - Compile and run `UDPP2P.java`:
+     ```sh
+     javac UDPP2P.java
+     java UDPP2P
+     ```
+
+2. **Interaction:**
+   - The P2P client will communicate with other peers specified in the configuration file.
+   - It will share and receive file lists from peers.
+
+## Notes
+
+- Ensure that the configuration files are in the same directory as the corresponding Java files.
+- Modify the configuration files as needed to match your network setup.
+- The examples use port `9876` by default. Ensure that this port is not blocked by your firewall.
+
+## Author
+
+- Thomas Rua
+- Github COPILOT
