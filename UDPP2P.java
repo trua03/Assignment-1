@@ -151,13 +151,17 @@ public class UDPP2P
 
     private void checkForOfflinePeers() {
         long currentTime = System.currentTimeMillis();
+        Set<String> keysToRemove = new HashSet<>();
         for (Map.Entry<String, Long> entry : peerLastResponse.entrySet()) {
             if (currentTime - entry.getValue() > TIMEOUT) {
                 System.out.println("Peer " + entry.getKey() + " is possibly offline.");
                 lostPeers.add(entry.getKey());
-                peerLastResponse.remove(entry.getKey());
+                keysToRemove.add(entry.getKey());
                 peerFiles.remove(entry.getKey());
             }
+        }
+        for (String key : keysToRemove) {
+            peerLastResponse.remove(key);
         }
     }
 
