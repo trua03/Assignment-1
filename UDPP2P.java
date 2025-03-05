@@ -37,8 +37,9 @@ public class UDPP2P
             
             // Load IP address from configuration file
             Properties config = new Properties();
-            config.load(new FileInputStream("../UDPP2P.config"));
+            config.load(new FileInputStream("UDPP2P.config"));
             String ipAddress = config.getProperty("IPAddress", "localhost");
+            String directoryPath = config.getProperty("Directory");
 
             //create socket for the destination/server
             InetAddress IPAddress = InetAddress.getByName(ipAddress);
@@ -49,11 +50,9 @@ public class UDPP2P
 
             do
             {
-            	//construct the client packet & send it
-            	System.out.println("Enter your message:");
 
                 //create directory list
-                File directory = new File("./DR.J UDP");
+                File directory = new File(directoryPath);
                 File[] filesList = directory.listFiles();
                 StringBuilder sentenceBuilder = new StringBuilder();
                 for (File file : filesList) {
