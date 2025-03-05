@@ -47,10 +47,10 @@ public class UDPClient2
             config.load(new FileInputStream("UDPClient2.config"));
             String ipAddress = config.getProperty("IPAddress");
             String directoryPath = config.getProperty("Directory");
+            int serverPort = Integer.parseInt(config.getProperty("ServerPort"));
 
             //create socket for the destination/server
             InetAddress IPAddress = InetAddress.getByName(ipAddress);
-            int serverPort = 9876;
             byte[] incomingData = new byte[1024];
             String sentence = "";
         	byte data[] = new byte[1024];
@@ -88,6 +88,7 @@ public class UDPClient2
                 sendPacket = null; incomingPacket = null;
                 System.out.println("My IP: " + InetAddress.getLocalHost().getHostAddress());
                 System.out.println("My Port: " + socket.getLocalPort());
+                System.out.println("__________________________________\n \n");
 
                 // Wait for a random interval between 0-30 seconds
                 int waitTime = random.nextInt(31) * 1000;

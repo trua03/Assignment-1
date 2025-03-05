@@ -1,10 +1,14 @@
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -22,15 +26,21 @@ public class UDPServer2
     private String latestTimestamp = "";
     private Map<String, Long> clientLastUpdate = new HashMap<>();
     private static final long TIMEOUT = 31000; // 31 seconds
+    private Set<String> lostClients = new HashSet<>();
 
     public UDPServer2() 
     {
     	try 
     	{
-    		//create the socket assuming the server is listening on port 9876
-			socket = new DatagramSocket(9876);
+            // Load configuration from file
+            Properties config = new Properties();
+            config.load(new FileInputStream("UDPServer.config"));
+            int port = Integer.parseInt(config.getProperty("Port"));
+
+    		//create the socket assuming the server is listening on port in config
+			socket = new DatagramSocket(port);
 		} 
-    	catch (SocketException e) 
+    	catch (IOException e) 
     	{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -44,12 +54,24 @@ public class UDPServer2
                 checkForOfflineClients();
             }
         }, 0, 10000); // Check every 10 seconds
+
+        // Schedule a task to print the list of available files every 30 seconds
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                printAvailableFiles();
+            }
+        }, 0, 30000); // Print every 30 seconds
     }
 
     public void createAndListenSocket() 
     {
         try 
         {
+
+            
+
+
         	//incoming data buffer
             byte[] incomingData = new byte[1024];
 
@@ -57,7 +79,7 @@ public class UDPServer2
             {
             	//create incoming packet
                 DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
-                System.out.println("Waiting...");
+                // System.out.println("Waiting...");
                 
                 //wait for the packet to arrive and store it in incoming packet
                 socket.receive(incomingPacket);
@@ -71,9 +93,9 @@ public class UDPServer2
                 	socket.close();
                 	break;
                 }
-                System.out.println("Received message from client: " + message);
-                System.out.println("Client Details:PORT " + incomingPacket.getPort()
-                + ", IP Address:" + incomingPacket.getAddress());
+                // System.out.println("Received message from client: " + message);
+                // System.out.println("Client Details:PORT " + incomingPacket.getPort()
+                // + ", IP Address:" + incomingPacket.getAddress());
                 
                 // Extract timestamp from the message
                 String[] messageParts = message.split("\n", 2);
@@ -95,11 +117,8 @@ public class UDPServer2
                 }
                 responseBuilder.append("Latest update timestamp: ").append(latestTimestamp).append("\n");
                 responseBuilder.append("Offline Nodes:\n");
-                for (Map.Entry<String, Long> entry : clientLastUpdate.entrySet()) {
-                    if (currentTime - entry.getValue() > TIMEOUT) {
-                        responseBuilder.append("Client: ").append(entry.getKey()).append(" is possibly offline.\n");
-                        fileRecords.remove(entry.getKey());
-                    }
+                for (String lostClient : lostClients) {
+                    responseBuilder.append("Client: ").append(lostClient).append(" is possibly offline.\n");
                 }
                 String reply = responseBuilder.toString();
                 byte[] data = reply.getBytes();
@@ -127,9 +146,29 @@ public class UDPServer2
         for (Map.Entry<String, Long> entry : clientLastUpdate.entrySet()) {
             if (currentTime - entry.getValue() > TIMEOUT) {
                 System.out.println("Client " + entry.getKey() + " is possibly offline.");
+                System.out.println("____________________________________________ \n \n");
+                lostClients.add(entry.getKey());
                 fileRecords.remove(entry.getKey());
             }
         }
+    }
+
+    private void printAvailableFiles() {
+        StringBuilder responseBuilder = new StringBuilder("Available Files:\n");
+        long currentTime = System.currentTimeMillis();
+        for (Map.Entry<String, String> entry : fileRecords.entrySet()) {
+            if (currentTime - clientLastUpdate.get(entry.getKey()) <= TIMEOUT) {
+                responseBuilder.append("Client: ").append(entry.getKey()).append("\nFiles:\n")
+                        .append(entry.getValue()).append("\n");
+            }
+        }
+        responseBuilder.append("Latest update timestamp: ").append(latestTimestamp).append("\n");
+        responseBuilder.append("Offline Nodes:\n");
+        for (String lostClient : lostClients) {
+            responseBuilder.append("Client: ").append(lostClient).append(" is possibly offline.\n");
+        }
+        System.out.println(responseBuilder.toString());
+        System.out.println("____________________________________________ \n \n");
     }
 
     public static void main(String[] args) 
