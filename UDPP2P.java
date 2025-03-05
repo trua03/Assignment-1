@@ -121,6 +121,9 @@ public class UDPP2P
                 peerLastResponse.put(peerKey, System.currentTimeMillis());
                 peerFiles.put(peerKey, response);
 
+                // Remove peer from lostPeers if it returns online
+                lostPeers.remove(peerKey);
+
                 // Wait for a random interval between 0-30 seconds
                 int waitTime = random.nextInt(31) * 1000;
                 Thread.sleep(waitTime);
