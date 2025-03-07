@@ -9,7 +9,7 @@ import java.util.Scanner;
 import java.util.Random;
 /**
  * 
- * @author cjaiswal
+ * @author cjaiswal, trua, aehlers, rbarbarito
  *
  *  
  * 
